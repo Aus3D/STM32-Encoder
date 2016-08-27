@@ -8092,7 +8092,7 @@ Discarded input sections
  .debug_macro   0x00000000       0x16 src/syscalls.o
  .debug_macro   0x00000000       0x88 src/syscalls.o
  .debug_line    0x00000000      0x577 src/syscalls.o
- .debug_str     0x00000000     0x7154 src/syscalls.o
+ .debug_str     0x00000000     0x715d src/syscalls.o
  .comment       0x00000000       0x6f src/syscalls.o
  .debug_frame   0x00000000      0x264 src/syscalls.o
  .ARM.attributes
@@ -9292,7 +9292,7 @@ LOAD c:/ac6/systemworkbench/plugins/fr.ac6.mcu.externaltools.arm-none.win32_1.7.
                 0x00000453       0x1e c:/ac6/systemworkbench/plugins/fr.ac6.mcu.externaltools.arm-none.win32_1.7.0.201602121829/tools/compiler/bin/../lib/gcc/arm-none-eabi/5.2.1/armv6-m/crtn.o
 OUTPUT(STM32-Encoder.elf elf32-littlearm)
 
-.debug_info     0x00000000     0x3d0a
+.debug_info     0x00000000     0x3d13
  .debug_info    0x00000000      0x4dd HAL_Driver/Src/stm32f0xx_hal.o
  .debug_info    0x000004dd      0x697 HAL_Driver/Src/stm32f0xx_hal_cortex.o
  .debug_info    0x00000b74       0xc9 HAL_Driver/Src/stm32f0xx_hal_msp_template.o
@@ -9305,7 +9305,7 @@ OUTPUT(STM32-Encoder.elf elf32-littlearm)
  .debug_info    0x00002e0e      0x21c src/system_stm32f0xx.o
  .debug_info    0x0000302a      0x742 src/tm_stm32_gpio.o
  .debug_info    0x0000376c      0x53a src/ws2812.o
- .debug_info    0x00003ca6       0x64 startup/startup_stm32.o
+ .debug_info    0x00003ca6       0x6d startup/startup_stm32.o
 
 .debug_abbrev   0x00000000     0x11d7
  .debug_abbrev  0x00000000      0x1a2 HAL_Driver/Src/stm32f0xx_hal.o
@@ -9480,7 +9480,7 @@ OUTPUT(STM32-Encoder.elf elf32-littlearm)
  .debug_line    0x000069ff      0xa68 src/ws2812.o
  .debug_line    0x00007467       0x79 startup/startup_stm32.o
 
-.debug_str      0x00000000    0x5fd19
+.debug_str      0x00000000    0x5fcf5
  .debug_str     0x00000000    0x5761c HAL_Driver/Src/stm32f0xx_hal.o
                               0x57989 (size before relaxing)
  .debug_str     0x0005761c      0x1df HAL_Driver/Src/stm32f0xx_hal_cortex.o
@@ -9495,15 +9495,15 @@ OUTPUT(STM32-Encoder.elf elf32-littlearm)
                               0x5ef40 (size before relaxing)
  .debug_str     0x0005f622      0x2eb src/softi2c.o
                               0x580b1 (size before relaxing)
- .debug_str     0x0005f90d       0x5f src/spi.o
-                               0x9766 (size before relaxing)
- .debug_str     0x0005f96c       0x38 src/stm32f0xx_it.o
+ .debug_str     0x0005f90d       0x3b src/spi.o
+                               0x976f (size before relaxing)
+ .debug_str     0x0005f948       0x38 src/stm32f0xx_it.o
                               0x574a2 (size before relaxing)
- .debug_str     0x0005f9a4       0x5a src/system_stm32f0xx.o
+ .debug_str     0x0005f980       0x5a src/system_stm32f0xx.o
                               0x5755b (size before relaxing)
- .debug_str     0x0005f9fe      0x1b9 src/tm_stm32_gpio.o
+ .debug_str     0x0005f9da      0x1b9 src/tm_stm32_gpio.o
                               0x57cf3 (size before relaxing)
- .debug_str     0x0005fbb7      0x162 src/ws2812.o
+ .debug_str     0x0005fb93      0x162 src/ws2812.o
                               0x5df65 (size before relaxing)
 
 .comment        0x00000000       0x6e

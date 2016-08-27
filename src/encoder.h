@@ -70,24 +70,5 @@ class AS5600Encoder {
 
 };
 
-/*
-
-
-long count = 0;
-long oldCount = 0;
-long revolutions = 0;
-long offset = 0;
-bool offsetInitialised = false;
-long avgSpeed = 0;
-
-float mm = 0;
-float oldMm = -999;
-float prevMm = 0;
-
-uint8_t magStrength = MAG_SIG_BAD;
-
-bool initEncoder();
-void updateEncoder();
-*/
 
 #endif
