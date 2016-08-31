@@ -51,7 +51,7 @@ class AS5600Encoder {
 		long revolutions;
 		bool offsetInitialised;
 
-		uint8_t statusByte;
+
 		uint8_t magStrength;
 
 
@@ -67,6 +67,7 @@ class AS5600Encoder {
 		long getCount();
 
 		longByte encoderCount;
+		uint8_t statusByte;
 
 };
 
