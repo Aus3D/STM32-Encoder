@@ -3,26 +3,6 @@
 
 #include "stm32f0xx.h"
 #include "stm32f0xx_hal.h"
-#include "softi2c.h"
-
-
-
-/*typedef enum {
-	X=CRGB::DodgerBlue,
-	Y=CRGB::Yellow,
-	Z=CRGB::Lime,
-	Z2=CRGB::MediumSeaGreen,
-	E=CRGB::Violet,
-	E2=CRGB::Purple,
-	SPARE1=CRGB::Magenta,
-	SPARE2=CRGB::ForestGreen,
-	ADDR_CUSTOM=CRGB::White
-
-	   } I2CAddrColourSignal;
-*/
-
-uint8_t bitRead(unsigned char byte, int position);
-int readPosition();
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
@@ -30,16 +10,11 @@ void SystemClock_Config(void);
 
 
 void setup();
-
 void updateLed();
-
-
-
 void blinkLeds(int times, uint8_t red, uint8_t green, uint8_t blue);
 void blinkLeds(int times, uint32_t colour);
 
 //I2C Slave Setup
-
 //Address configuration
 #define ADDR_PORT GPIOA
 #define ADDR0_PIN GPIO_PIN_0
