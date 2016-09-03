@@ -11,7 +11,6 @@
 #include "main.h"
 #include "stm32f0xx.h"
 #include <stdint.h>
-#include "stm32f030.h"
 #include "ws2812.h"
 #include "encoder.h"
 #include <stdio.h>

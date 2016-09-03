@@ -1,5 +1,4 @@
 #include "ws2812.h"
-#include "stm32f030.h"
 #include "spi.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,7 +39,7 @@ void Ws2812::writeDMABuffer(int DeviceNumber, unsigned long Value) {
     while (Index < 8)
     {
         Encoding = Encoding << 3;
-        if (Value & BIT23)
+        if (Value & (1 << 23))
         {
             Encoding |= 0b110;
         }
@@ -62,7 +61,7 @@ void Ws2812::writeDMABuffer(int DeviceNumber, unsigned long Value) {
     while (Index < 8)
     {
         Encoding = Encoding << 3;
-        if (Value & BIT23)
+        if (Value & (1 << 23))
         {
             Encoding |= 0b110;
         }
@@ -84,7 +83,7 @@ void Ws2812::writeDMABuffer(int DeviceNumber, unsigned long Value) {
     while (Index < 8)
     {
         Encoding = Encoding << 3;
-        if (Value & BIT23)
+        if (Value & (1 << 23))
         {
             Encoding |= 0b110;
         }
