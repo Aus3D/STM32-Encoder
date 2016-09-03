@@ -30,21 +30,33 @@ void AS5600Encoder::update() {
 
 	statusByte = response[0];
 
-	md = ((statusByte >> 5) & 0x01);
-	ml = ((statusByte >> 4) & 0x01);
-	mh = ((statusByte >> 3) & 0x01);
+	md = !CHECK_BIT(statusByte,ENC_STATUS_BIT_MD);
+	ml = !CHECK_BIT(statusByte,ENC_STATUS_BIT_ML);
+	mh = !CHECK_BIT(statusByte,ENC_STATUS_BIT_MH);
 
-	if(md == 1) {
+	//(((statusByte >> 5) & 0x01) == 1);
+	//ml = (((statusByte >> 4) & 0x01) == 1);
+	//mh = (((statusByte >> 3) & 0x01) == 1);
+
+	//if(md) {
+	//	magStrength = MAG_SIG_GOOD;
+	//}
+
+	//if(mh == 1) {
+	//	magStrength = MAG_SIG_MID;
+	//}
+
+	if(md) {
 		magStrength = MAG_SIG_GOOD;
 	}
 
-	if(mh == 1) {
-		magStrength = MAG_SIG_MID;
-	}
-
-	if(ml == 1) {
+	if(ml) {
 		magStrength = MAG_SIG_BAD;
 	}
+
+	//if(mh) {
+	//	magStrength = MAG_SIG_MID;
+	//}
 
 	readEncoderBytes(ENC_REG_ANG_FIL1,response,2);
 

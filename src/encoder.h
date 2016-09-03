@@ -6,6 +6,8 @@
 #include "tm_stm32_gpio.h"
 #include "softi2c.h"
 
+#define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
+
 //Encoder I2C Setup
 #define ENC_I2C_PORT 	GPIOA
 #define ENC_I2C_SDA 	GPIO_PIN_5
@@ -30,6 +32,10 @@
 #define ENC_REG_MAG1		0x1B
 #define ENC_REG_MAG2		0x1C
 #define ENC_REG_BURN		0xFF
+
+#define ENC_STATUS_BIT_MH	3
+#define ENC_STATUS_BIT_ML	4
+#define ENC_STATUS_BIT_MD	5
 
 #define MAG_SIG_GOOD 	0
 #define MAG_SIG_MID 	1
