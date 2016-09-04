@@ -1,18 +1,19 @@
 #include "softi2c.h"
+#include "stm32f0xx.h"
 
 // Software I2C driver
 
 #define I2C_Direction_Transmitter       ((uint16_t)0x0000)
 #define I2C_Direction_Receiver          ((uint16_t)0x0400)
 
-#define SCL_H TM_GPIO_SetPinHigh(_sclPort, _sclPin)
-#define SCL_L TM_GPIO_SetPinLow(_sclPort, _sclPin)
+#define SCL_H _sclPort->BSRR = _sclPin
+#define SCL_L _sclPort->BRR  = _sclPin
 
-#define SDA_H TM_GPIO_SetPinHigh(_sdaPort, _sdaPin)
-#define SDA_L TM_GPIO_SetPinLow(_sdaPort, _sdaPin)
+#define SDA_H _sdaPort->BSRR = _sdaPin
+#define SDA_L _sdaPort->BRR  = _sdaPin
 
-#define SCL_read      TM_GPIO_GetInputPinValue(_sclPort, _sclPin)
-#define SDA_read      TM_GPIO_GetInputPinValue(_sdaPort, _sdaPin)
+#define SCL_read (_sclPort->IDR & _sclPin)
+#define SDA_read (_sdaPort->IDR & _sdaPin)
 
 SoftwareWire::SoftwareWire(uint16_t sdaPin, GPIO_TypeDef* sdaPort, uint16_t sclPin, GPIO_TypeDef* sclPort) {
 	_sdaPin = sdaPin;
@@ -26,8 +27,18 @@ SoftwareWire::SoftwareWire(uint16_t sdaPin, GPIO_TypeDef* sdaPort, uint16_t sclP
 
 void SoftwareWire::i2cInit()
 {
-	TM_GPIO_Init(_sdaPort,_sdaPin,TM_GPIO_Mode_OUT,TM_GPIO_OType_OD,TM_GPIO_PuPd_NOPULL,TM_GPIO_Speed_High);
-	TM_GPIO_Init(_sclPort,_sclPin,TM_GPIO_Mode_OUT,TM_GPIO_OType_OD,TM_GPIO_PuPd_NOPULL,TM_GPIO_Speed_High);
+	uint8_t sdaPinIndex = pinIndex((uint16_t)_sdaPin);
+	uint8_t sclPinIndex = pinIndex((uint16_t)_sclPin);
+
+	_sdaPort->MODER 	= (_sdaPort->MODER & ~((uint32_t)(0x03 << (2 * sdaPinIndex)))) | ((uint32_t)(0x01 << (2 * sdaPinIndex)));
+	_sdaPort->OTYPER 	= (_sdaPort->OTYPER & ~(uint16_t)(0x01 << sdaPinIndex)) | ((uint16_t)(0x01 << sdaPinIndex));
+	_sdaPort->PUPDR 	= (_sdaPort->PUPDR & ~(0x03 << (2 * sdaPinIndex))) | ((uint32_t)(0x00 << (2 * sdaPinIndex)));
+	_sdaPort->OSPEEDR 	= (_sdaPort->OSPEEDR & ~((uint32_t)(0x03 << (2 * sdaPinIndex)))) | ((uint32_t)(0x03 << (2 * sdaPinIndex)));
+
+	_sclPort->MODER 	= (_sclPort->MODER & ~((uint32_t)(0x03 << (2 * sclPinIndex)))) | ((uint32_t)(0x01 << (2 * sclPinIndex)));
+	_sclPort->OTYPER 	= (_sclPort->OTYPER & ~(uint16_t)(0x01 << sclPinIndex)) | ((uint16_t)(0x01 << sclPinIndex));
+	_sclPort->PUPDR 	= (_sclPort->PUPDR & ~(0x03 << (2 * sclPinIndex))) | ((uint32_t)(0x00 << (2 * sclPinIndex)));
+	_sclPort->OSPEEDR 	= (_sclPort->OSPEEDR & ~((uint32_t)(0x03 << (2 * sclPinIndex)))) | ((uint32_t)(0x03 << (2 * sclPinIndex)));
 }
 
 bool SoftwareWire::i2cStart(void)
@@ -218,4 +229,14 @@ void SoftwareWire::i2cDelay(void) {
 	while(time--);
 }
 
+uint8_t pinIndex(uint16_t gpio_pin) {
+	uint8_t pinVal = 0;
+	for (uint8_t pinpos = 0; pinpos < 0x10; pinpos++) {
+		if ((gpio_pin & (1 << pinpos)) == 0) {
+			continue;
+		}
+		pinVal = pinpos;
+	}
+	return pinVal;
+}
 

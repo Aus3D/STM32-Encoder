@@ -3,9 +3,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "stm32f0xx.h"
-#include "stm32f0xx_hal.h"
-#include "tm_stm32_gpio.h"
 #include "timing.h"
 
 //#define I2C_DELAY_TICKS 8	//minimum number of clock ticks in I2C delay function. Delay will be larger than this due to overheads.
@@ -39,5 +36,7 @@ private:
 	GPIO_TypeDef* _sclPort;
 
 };
+
+uint8_t pinIndex(uint16_t gpio_pin);
 
 #endif

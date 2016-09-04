@@ -3,7 +3,6 @@
 
 #include "stm32f0xx.h"
 #include "stm32f0xx_hal.h"
-#include "tm_stm32_gpio.h"
 #include "softi2c.h"
 
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
