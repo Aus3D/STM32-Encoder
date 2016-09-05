@@ -25,8 +25,11 @@ uint8_t ledRGB[] = {255,0,0};
 uint8_t ledHSV[] = {255,255,255};
 
 #define I2C_TIMING      0x00A51314
-#define I2C_ADDRESS        0x30F
+#define I2C_ADDRESS        (0x30)
+#define I2C_BYTE_TO_SEND (0xAA)
 
+void Configure_GPIO_I2C1(void);
+void Configure_I2C1_Slave(void);
 
 /* I2C handler declaration */
 I2C_HandleTypeDef I2cHandle;
@@ -50,6 +53,19 @@ void setup() {
 
 	HAL_Init();
 
+	Configure_GPIO_I2C1();
+	Configure_I2C1_Slave();
+
+	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
+	GPIOA->MODER |= GPIO_MODER_MODER13_0;
+	GPIOA->OTYPER &= ~GPIO_OTYPER_OT_13;
+	GPIOA->OSPEEDR |= GPIO_OSPEEDER_OSPEEDR13;
+	GPIOA->PUPDR &= ~GPIO_PUPDR_PUPDR13;
+
+	GPIOA->BSRR |= GPIO_PIN_13;
+	HAL_Delay(10);
+	GPIOA->BRR |= GPIO_PIN_13;
+
 	pixel.setup();
 
 	if(encoder.init()) {
@@ -61,6 +77,94 @@ void setup() {
 	blinkLeds(1,CRGB::Green);
 }
 
+/**
+  * @brief  This function :
+             - Enables GPIO clock
+             - Configures the I2C1 pins on GPIO PB6 PB7
+  * @param  None
+  * @retval None
+  */
+__INLINE void Configure_GPIO_I2C1(void)
+{
+  /* Enable the peripheral clock of GPIOF */
+  RCC->AHBENR |= RCC_AHBENR_GPIOFEN;
+
+  /* (1) open drain for I2C signals */
+  /* (2) AF1 for I2C signals */
+  /* (3) Select AF mode (10) on PB6 and PB7 */
+  GPIOF->OTYPER |= GPIO_OTYPER_OT_0 | GPIO_OTYPER_OT_1; /* (1) */
+  GPIOF->AFR[0] = (GPIOF->AFR[0] & ~(GPIO_AFRL_AFRL0 | GPIO_AFRL_AFRL1))  | (1 << ( 0 * 4 )) | (1 << (1 * 4)); /* (2) */
+  GPIOF->MODER = (GPIOF->MODER & ~(GPIO_MODER_MODER0 | GPIO_MODER_MODER1)) | (GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1); /* (3) */
+
+}
+
+/**
+  * @brief  This function configures I2C1, slave.
+  * @param  None
+  * @retval None
+  */
+__INLINE void Configure_I2C1_Slave(void)
+{
+  /* Configure RCC for I2C1 */
+  /* (1) Enable the peripheral clock I2C1 */
+  /* (2) Use SysClk for I2C CLK */
+  RCC->APB1ENR |= RCC_APB1ENR_I2C1EN; /* (1) */
+  RCC->CFGR3 |= RCC_CFGR3_I2C1SW_SYSCLK; /* (2) */
+
+  /* Configure I2C1, slave */
+  /* (3) Timing register value is computed with the AN4235 xls file,
+         fast Mode @400kHz with I2CCLK = 48MHz, rise time = 140ns,
+         fall time = 40ns */
+  /* (4) Periph enable, address match interrupt enable */
+  /* (5) 7-bit address = 0x5A */
+  /* (6) Enable own address 1 */
+  I2C1->TIMINGR = (uint32_t)0x00B00000; /* (3) */
+  I2C1->CR1 = I2C_CR1_PE | I2C_CR1_ADDRIE; /* (4) */
+  I2C1->OAR1 |= (uint32_t)(I2C_ADDRESS<<1); /* (5) */
+  //I2C1->OAR1 |= I2C_OAR1_OA1MODE;
+  //I2C1->CR1 |= I2C_CR1_SBC;
+  I2C1->OAR1 |= I2C_OAR1_OA1EN; /* (6) */
+
+  /* Configure IT */
+  /* (7) Set priority for I2C1_IRQn */
+  /* (8) Enable I2C1_IRQn */
+  NVIC_SetPriority(I2C1_IRQn, 0); /* (7) */
+  NVIC_EnableIRQ(I2C1_IRQn); /* (8) */
+}
+
+/**
+  * @brief  This function handles I2C1 interrupt request.
+  * @param  None
+  * @retval None
+  */
+void I2C1_IRQHandler(void)
+{
+  uint32_t I2C_InterruptStatus = I2C1->ISR; /* Get interrupt status */
+
+  GPIOA->BSRR |= GPIO_PIN_13;
+
+  //I2C1->CR2 |= I2C_CR2_NACK
+  if((I2C_InterruptStatus & I2C_ISR_ADDR) == I2C_ISR_ADDR) /* Check address match */
+  {
+    I2C1->ICR |= I2C_ICR_ADDRCF; /* Clear address match flag */
+    if((I2C1->ISR & I2C_ISR_DIR) == I2C_ISR_DIR) /* Check if transfer direction is read (slave transmitter) */
+    {
+      I2C1->CR1 |= I2C_CR1_TXIE; /* Set transmit IT */
+    }
+  }
+  else if((I2C_InterruptStatus & I2C_ISR_TXIS) == I2C_ISR_TXIS)
+  {
+    I2C1->CR1 &=~ I2C_CR1_TXIE; /* Disable transmit IT */
+    I2C1->TXDR = I2C_BYTE_TO_SEND; /* Byte to send */
+  }
+  else
+  {
+    GPIOC->BSRR = GPIO_BSRR_BS_8; /* Lit orange LED */
+    NVIC_DisableIRQ(I2C1_IRQn); /* Disable I2C1_IRQn */
+  }
+
+  GPIOA->BRR |= GPIO_PIN_13;
+}
 
 void SystemClock_Config(void)
 {
