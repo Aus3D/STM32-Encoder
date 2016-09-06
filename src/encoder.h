@@ -4,13 +4,11 @@
 #include "stm32f0xx.h"
 #include "stm32f0xx_hal.h"
 #include "softi2c.h"
+#include "pins.h"
 
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 
 //Encoder I2C Setup
-#define ENC_I2C_PORT 	GPIOA
-#define ENC_I2C_SDA 	GPIO_PIN_5
-#define ENC_I2C_SCL 	GPIO_PIN_4
 #define ENC_I2C_ADDR	0x36
 
 #define ENC_REG_ZMCO 		0x00
@@ -60,7 +58,7 @@ class AS5600Encoder {
 		uint8_t magStrength;
 
 
-		SoftwareWire encWire = SoftwareWire(ENC_I2C_SDA, ENC_I2C_PORT, ENC_I2C_SCL, ENC_I2C_PORT);
+		SoftwareWire encWire = SoftwareWire(ENC_SDA, ENC_PORT, ENC_SCL, ENC_PORT);
 		void readEncoderBytes(uint8_t,uint8_t[],uint8_t);
 
 	public:

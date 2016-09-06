@@ -16,17 +16,11 @@ void blinkLeds(int times, uint32_t colour);
 
 void Configure_GPIO_I2C1(void);
 void Configure_I2C1_Slave(void);
+void Configure_GPIO_General(void);
 
 //I2C Slave Setup
 //Address configuration
-#define ADDR_PORT GPIOA
-#define ADDR0_PIN GPIO_PIN_0
-#define ADDR1_PIN GPIO_PIN_1
-#define ADDR2_PIN GPIO_PIN_2
-
-#define WS2812_PORT GPIOA
-#define WS2812_PIN 	GPIO_PIN_7
-#define WS2812_NUM 	2
+#define WS2812_NUM 		2
 
 const uint8_t i2cBaseAddress = 30;
 uint8_t addressOffset;

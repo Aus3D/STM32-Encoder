@@ -15,6 +15,7 @@
 #include "encoder.h"
 #include <stdio.h>
 #include <string.h>
+#include "pins.h"
 
 int ledBrightness[] = {20,20};
 int ledMode[]       = {0,0};
@@ -46,20 +47,22 @@ void setup() {
 
 	HAL_Init();
 
+	HAL_Delay(10);
+
 	Configure_GPIO_I2C1();
 	Configure_I2C1_Slave();
-
-	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
-	GPIOA->MODER |= GPIO_MODER_MODER13_0;
-	GPIOA->OTYPER &= ~GPIO_OTYPER_OT_13;
-	GPIOA->OSPEEDR |= GPIO_OSPEEDER_OSPEEDR13;
-	GPIOA->PUPDR &= ~GPIO_PUPDR_PUPDR13;
-
-	GPIOA->BSRR |= GPIO_PIN_13;
-	HAL_Delay(10);
-	GPIOA->BRR |= GPIO_PIN_13;
+	Configure_GPIO_General();
 
 	pixel.setup();
+
+	HAL_Delay(10);
+
+	for(uint8_t i = 0; i < 100; i++) {
+		TEST_PORT->BSRR = TEST_PIN;
+		HAL_Delay(10);
+		TEST_PORT->BRR = TEST_PIN;
+		HAL_Delay(10);
+	}
 
 	if(encoder.init()) {
 		blinkLeds(1,CRGB::Green);
@@ -125,6 +128,26 @@ __INLINE void Configure_I2C1_Slave(void)
   NVIC_EnableIRQ(I2C1_IRQn); /* (8) */
 }
 
+
+void Configure_GPIO_General(void)
+{
+
+  GPIO_InitTypeDef GPIO_InitStruct;
+
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(TEST_PORT, TEST_PIN, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PA13 */
+  GPIO_InitStruct.Pin = TEST_PIN;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(TEST_PORT, &GPIO_InitStruct);
+
+}
 
 
 void SystemClock_Config(void)
