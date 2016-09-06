@@ -4,6 +4,9 @@
 #include "stm32f0xx.h"
 #include "stm32f0xx_hal.h"
 
+#define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
+#define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
+
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 //static void MX_GPIO_Init(void);
@@ -18,7 +21,25 @@ void Configure_GPIO_I2C1(void);
 void Configure_I2C1_Slave(void);
 void Configure_GPIO_General(void);
 
+void i2c_callback();
+void i2c_receive_callback();
+
+void setLedMode(uint8_t, uint8_t);
+
 //I2C Slave Setup
+
+#define I2C_REQ_REPORT        0
+#define I2C_RESET_COUNT       1
+#define I2C_SET_ADDR          2
+#define I2C_SET_REPORT_MODE   3
+#define I2C_CLEAR_EEPROM      4
+
+#define I2C_ENC_LED_PAR_MODE  10
+#define I2C_ENC_LED_PAR_BRT   11
+#define I2C_ENC_LED_PAR_RATE  12
+#define I2C_ENC_LED_PAR_RGB   13
+#define I2C_ENC_LED_PAR_HSV   14
+
 //Address configuration
 #define WS2812_NUM 		2
 

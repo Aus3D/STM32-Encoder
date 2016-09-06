@@ -27,10 +27,21 @@ uint8_t ledHSV[] = {255,255,255};
 
 #define I2C_TIMING      0x00A51314
 #define I2C_ADDRESS        (0x30)
-#define I2C_BYTE_TO_SEND (0xAA)
+#define I2C_BYTE_TO_SEND (0x01)
+#define MAX_DATA_BYTES 8
+
+uint8_t m_TransmissionRuning = 0;
+
+uint8_t rxIndex = 0;
+bool 	rxComplete = false;
+uint8_t txIndex = 0;
+uint8_t rxBuffer[MAX_DATA_BYTES] = {0};
+uint8_t txBuffer[MAX_DATA_BYTES] = {0};
 
 Ws2812 pixel = Ws2812();
 AS5600Encoder encoder = AS5600Encoder();
+
+I2C_HandleTypeDef hi2c1;
 
 int main(void)
 {
@@ -38,7 +49,28 @@ int main(void)
 
 	for(;;) {
 		encoder.update();
+
 		updateLed();
+
+		if(false) {	//rxComplete
+			//copy received data into new array, in case RX data is overridden in I2C interrupt
+			uint8_t temp[MAX_DATA_BYTES];
+			memcpy(rxBuffer,temp,MAX_DATA_BYTES);
+
+			blinkLeds(1,CRGB::Orange);
+
+			for(int i = 0; i < 1; i++) {
+				for(int j = 0; j < 8; j++) {
+					if(CHECK_BIT(temp[i],7-j)) {
+						blinkLeds(1,CRGB::White);
+					} else {
+						blinkLeds(1,CRGB::Blue);
+					}
+				}
+			}
+
+			blinkLeds(1,CRGB::Orange);
+		}
 	}
 }
 
@@ -115,7 +147,7 @@ __INLINE void Configure_I2C1_Slave(void)
   /* (5) 7-bit address = 0x5A */
   /* (6) Enable own address 1 */
   I2C1->TIMINGR = (uint32_t)0x00B00000; /* (3) */
-  I2C1->CR1 = I2C_CR1_PE | I2C_CR1_ADDRIE; /* (4) */
+  I2C1->CR1 = I2C_CR1_PE | I2C_CR1_RXIE | I2C_CR1_ADDRIE |I2C_CR1_STOPIE; /* (4) */
   I2C1->OAR1 |= (uint32_t)(I2C_ADDRESS<<1); /* (5) */
   //I2C1->OAR1 |= I2C_OAR1_OA1MODE;
   //I2C1->CR1 |= I2C_CR1_SBC;
@@ -257,4 +289,178 @@ void blinkLeds(int times, uint8_t red, uint8_t green, uint8_t blue) {
     pixel.show();
     HAL_Delay(500);
   }
+}
+
+void i2c_receive_callback() {
+
+	//ledMode[0] = rxBuffer[2];
+
+
+	//copy received data into new array, in case RX data is overridden in I2C interrupt
+	uint8_t temp[MAX_DATA_BYTES];
+	memcpy(temp,rxBuffer,MAX_DATA_BYTES);
+
+	//ledMode[0] = rxBuffer[2];
+
+
+
+	switch(temp[0]) {
+	    case I2C_RESET_COUNT:
+	      //offset = encoderCount.val;
+	      break;
+	    case I2C_SET_ADDR:
+	      //setI2cAddress(temp[1]);
+	      //blinkLeds(1,CRGB::White);
+	      //restart();
+	      break;
+	    case I2C_SET_REPORT_MODE:
+	      i2c_response_mode = temp[1];
+	      break;
+	    case I2C_CLEAR_EEPROM:
+	      //eepromClear();
+	      break;
+	    case I2C_ENC_LED_PAR_MODE:
+	      setLedMode(temp[1],temp[2]);
+	      break;
+	    case I2C_ENC_LED_PAR_BRT:
+	      //setLedBrightness(temp[1],temp[2]);
+	      break;
+	    case I2C_ENC_LED_PAR_RGB:
+	      //setLedRGB(temp[1],temp[2],temp[3]);
+	      break;
+	    case I2C_ENC_LED_PAR_HSV:
+	      //setLedHSV(temp[1],temp[2],temp[3]);
+	      break;
+	    case I2C_ENC_LED_PAR_RATE:
+	      //setLedRate(temp[1],temp[2]);
+	      break;
+	  }
+
+
+
+}
+
+void i2c_callback() {
+
+
+	uint32_t I2C_InterruptStatus = I2C1->ISR; // Get interrupt status //
+
+	if((I2C_InterruptStatus & I2C_ISR_ADDR) == I2C_ISR_ADDR) // Check address match //
+	{
+		I2C1->ICR |= I2C_ICR_ADDRCF; // Clear address match flag //
+		//if((I2C1->ISR & I2C_ISR_DIR) == I2C_ISR_DIR) // Check if transfer direction is read (slave transmitter) //
+		//{
+		//	I2C1->CR1 |= I2C_CR1_TXIE; // Set transmit IT //
+		//}
+	}
+	//else if((I2C_InterruptStatus & I2C_ISR_TXIS) == I2C_ISR_TXIS)
+	//{
+	//	I2C1->CR1 &=~ I2C_CR1_TXIE; // Disable transmit IT //
+	//	I2C1->TXDR = I2C_BYTE_TO_SEND; // Byte to send //
+	//}
+	else if((I2C_InterruptStatus & I2C_ISR_RXNE) == I2C_ISR_RXNE)
+	{
+		ledMode[0] = I2C1->RXDR;
+
+		//GPIOC->BSRR = GPIO_BSRR_BS_8; // Lit orange LED //
+		//NVIC_DisableIRQ(I2C1_IRQn); // Disable I2C1_IRQn //
+	//}
+	//else if((I2C_InterruptStatus & I2C_ISR_NACKF) == I2C_ISR_NACKF)	// If NACK event
+	//{
+	//		// Clear NACK flag
+	//		I2C1->ICR |= I2C_ICR_NACKCF;
+	//}
+//	else if((I2C_InterruptStatus & I2C_ISR_STOPF) == I2C_ISR_STOPF)		// If STOP event
+//	{
+//			// Clear STOP flag
+//			I2C1->ICR |= I2C_ICR_STOPCF;
+	} else {
+		NVIC_DisableIRQ(I2C1_IRQn); /* Disable I2C1_IRQn */
+	}
+
+
+}
+
+extern "C"
+{
+
+	/**
+	  * @brief  This function handles I2C1 interrupt request.
+	  * @param  None
+	  * @retval None
+	  */
+	void I2C1_IRQHandler(void)
+	{
+		TEST_PORT->BSRR |= TEST_PIN;		//debug test
+		//i2c_callback();
+
+		uint32_t I2C_InterruptStatus = I2C1->ISR; /* Get interrupt status */
+
+		if((I2C_InterruptStatus & I2C_ISR_ADDR) == I2C_ISR_ADDR)
+		{
+			I2C1->ICR |= I2C_ICR_ADDRCF; /* Address match event */
+
+			rxIndex = 0;
+			txIndex = 0;
+			rxComplete = false;
+		}
+		else if((I2C_InterruptStatus & I2C_ISR_RXNE) == I2C_ISR_RXNE)
+		{
+			/* Read receive register, will clear RXNE flag */
+			//if(I2C1->RXDR == I2C_BYTE_TO_SEND)
+			//{
+				//GPIOC->ODR ^= GPIO_ODR_9; /* toggle green LED */
+			rxBuffer[rxIndex] = I2C1->RXDR;
+			rxIndex++;
+				//ledMode[0] = I2C1->RXDR;
+			//}
+		}
+		else if ((I2C_InterruptStatus & I2C_ISR_STOPF) == I2C_ISR_STOPF)
+		{
+			if(rxIndex > 0) {
+				i2c_receive_callback();
+				rxComplete = true;
+			}
+
+
+			I2C1->ICR |= I2C_ICR_STOPCF;
+		}
+
+		TEST_PORT->BRR |= TEST_PIN;		//debug test
+	}
+
+//	void HAL_I2C_SlaveRXCpltCallback(I2C_HandleTypeDef *I2cH) {
+//
+//		pixel.setPixelColor(0, CRGB::Blue);
+//		pixel.show();
+//
+//
+//		HAL_StatusTypeDef status;
+//		uint8_t *reg_addr;
+//		uint16_t max_size;
+//		uint16_t num_bytes_received = I2cH->XferSize - I2cH->XferCount;
+//		uint8_t *rx_bytes_start = I2cH->pBuffPtr - num_bytes_received;
+//
+//		bool i2c_transmitting = false;
+//		bool write = false;
+//
+//		if(I2cH->Instance == I2C1) {
+//			if(I2cH->Instance->ISR & ((uint32_t)0x00000010)) {	//check if address received was read mode
+//			} else {
+//				//device enters transmit mode
+//				uint16_t i2c_tx_length = 4;
+//				uint8_t i2c_tx_buffer[i2c_tx_length];
+//
+//				memcpy(i2c_tx_buffer,&encoder.encoderCount,4);
+//
+//				while(HAL_I2C_Slave_Transmit_IT(I2cH,(uint8_t*)i2c_tx_buffer,i2c_tx_length) == HAL_BUSY) {	//&I2cHandle, i2c_tx_buffer, i2c_tx_length
+//					//keep trying
+//				}
+//			}
+//		}
+//	}
+}
+
+void setLedMode(uint8_t led, uint8_t mode) {
+	ledMode[constrain(led,0,WS2812_NUM)] = mode;
 }
