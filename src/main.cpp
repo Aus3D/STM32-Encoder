@@ -28,12 +28,6 @@ uint8_t ledHSV[] = {255,255,255};
 #define I2C_ADDRESS        (0x30)
 #define I2C_BYTE_TO_SEND (0xAA)
 
-void Configure_GPIO_I2C1(void);
-void Configure_I2C1_Slave(void);
-
-/* I2C handler declaration */
-I2C_HandleTypeDef I2cHandle;
-
 Ws2812 pixel = Ws2812();
 AS5600Encoder encoder = AS5600Encoder();
 
@@ -45,7 +39,6 @@ int main(void)
 		encoder.update();
 		updateLed();
 	}
-
 }
 
 void setup() {
@@ -80,7 +73,7 @@ void setup() {
 /**
   * @brief  This function :
              - Enables GPIO clock
-             - Configures the I2C1 pins on GPIO PB6 PB7
+             - Configures the I2C1 pins on GPIO PF0 PF1
   * @param  None
   * @retval None
   */
@@ -91,7 +84,7 @@ __INLINE void Configure_GPIO_I2C1(void)
 
   /* (1) open drain for I2C signals */
   /* (2) AF1 for I2C signals */
-  /* (3) Select AF mode (10) on PB6 and PB7 */
+  /* (3) Select AF mode (10) on PF0 and PF1 */
   GPIOF->OTYPER |= GPIO_OTYPER_OT_0 | GPIO_OTYPER_OT_1; /* (1) */
   GPIOF->AFR[0] = (GPIOF->AFR[0] & ~(GPIO_AFRL_AFRL0 | GPIO_AFRL_AFRL1))  | (1 << ( 0 * 4 )) | (1 << (1 * 4)); /* (2) */
   GPIOF->MODER = (GPIOF->MODER & ~(GPIO_MODER_MODER0 | GPIO_MODER_MODER1)) | (GPIO_MODER_MODER0_1 | GPIO_MODER_MODER1_1); /* (3) */
@@ -132,39 +125,7 @@ __INLINE void Configure_I2C1_Slave(void)
   NVIC_EnableIRQ(I2C1_IRQn); /* (8) */
 }
 
-/**
-  * @brief  This function handles I2C1 interrupt request.
-  * @param  None
-  * @retval None
-  */
-void I2C1_IRQHandler(void)
-{
-  uint32_t I2C_InterruptStatus = I2C1->ISR; /* Get interrupt status */
 
-  GPIOA->BSRR |= GPIO_PIN_13;
-
-  //I2C1->CR2 |= I2C_CR2_NACK
-  if((I2C_InterruptStatus & I2C_ISR_ADDR) == I2C_ISR_ADDR) /* Check address match */
-  {
-    I2C1->ICR |= I2C_ICR_ADDRCF; /* Clear address match flag */
-    if((I2C1->ISR & I2C_ISR_DIR) == I2C_ISR_DIR) /* Check if transfer direction is read (slave transmitter) */
-    {
-      I2C1->CR1 |= I2C_CR1_TXIE; /* Set transmit IT */
-    }
-  }
-  else if((I2C_InterruptStatus & I2C_ISR_TXIS) == I2C_ISR_TXIS)
-  {
-    I2C1->CR1 &=~ I2C_CR1_TXIE; /* Disable transmit IT */
-    I2C1->TXDR = I2C_BYTE_TO_SEND; /* Byte to send */
-  }
-  else
-  {
-    GPIOC->BSRR = GPIO_BSRR_BS_8; /* Lit orange LED */
-    NVIC_DisableIRQ(I2C1_IRQn); /* Disable I2C1_IRQn */
-  }
-
-  GPIOA->BRR |= GPIO_PIN_13;
-}
 
 void SystemClock_Config(void)
 {

@@ -14,6 +14,9 @@ void updateLed();
 void blinkLeds(int times, uint8_t red, uint8_t green, uint8_t blue);
 void blinkLeds(int times, uint32_t colour);
 
+void Configure_GPIO_I2C1(void);
+void Configure_I2C1_Slave(void);
+
 //I2C Slave Setup
 //Address configuration
 #define ADDR_PORT GPIOA
