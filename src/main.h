@@ -25,6 +25,7 @@ void i2c_callback();
 void i2c_receive_callback();
 
 void setLedMode(uint8_t, uint8_t);
+void setLedBrightness(uint8_t, uint8_t);
 
 //I2C Slave Setup
 

@@ -267,7 +267,7 @@ void updateLed() {
 			//pixel.setPixelColor(i,brightness,brightness,brightness);
 			break;
 		}
-		//leds[i].nscale8(ledBrightness[i]);
+		pixel.nscale8(i,ledBrightness[i]);
 	}
 	pixel.show();
 }
@@ -280,6 +280,7 @@ void blinkLeds(int times, uint8_t red, uint8_t green, uint8_t blue) {
   for(int i = 0; i < times; i++) {
     for(int j = 0; j < pixel.numPixels(); j++) {
     	pixel.setPixelColor(j,red,green,blue);
+    	pixel.nscale8(j,ledBrightness[i]);
     }
     pixel.show();
     HAL_Delay(500);
@@ -323,7 +324,7 @@ void i2c_receive_callback() {
 	      setLedMode(temp[1],temp[2]);
 	      break;
 	    case I2C_ENC_LED_PAR_BRT:
-	      //setLedBrightness(temp[1],temp[2]);
+	      setLedBrightness(temp[1],temp[2]);
 	      break;
 	    case I2C_ENC_LED_PAR_RGB:
 	      //setLedRGB(temp[1],temp[2],temp[3]);
@@ -463,4 +464,8 @@ extern "C"
 
 void setLedMode(uint8_t led, uint8_t mode) {
 	ledMode[constrain(led,0,WS2812_NUM)] = mode;
+}
+
+void setLedBrightness(uint8_t led, uint8_t brightness) {
+	ledBrightness[constrain(led,0,WS2812_NUM)] = brightness;
 }

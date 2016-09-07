@@ -39,6 +39,7 @@ class Ws2812 {
 		void setup();
 		void setPixelColor(int led, int red, int green, int blue);
 		void setPixelColor(int led, unsigned color) ;
+		void nscale8(int led, int brightness);
 		void show();
 		int numPixels();
 

@@ -116,6 +116,21 @@ void Ws2812::setPixelColor(int led, unsigned color) {
 	ledColour[led] = color;
 }
 
+void Ws2812::nscale8(int led, int brightness) {
+	uint8_t r, g, b;
+	uint16_t scale_fixed = brightness + 1;
+
+	r = ledColour[led] >> 8;
+	g = ledColour[led] >> 16;
+	b = ledColour[led] >> 0;
+
+	r = (((uint16_t)r) * scale_fixed) >> 8;
+	g = (((uint16_t)g) * scale_fixed) >> 8;
+	b = (((uint16_t)b) * scale_fixed) >> 8;
+
+	setPixelColor(led,r,g,b);
+}
+
 void Ws2812::show() {
 	for (int i=0;i<NUM_PIXELS;i++)
 		writeDMABuffer(i,ledColour[i]); // Output a colour Format: GGRRBB
