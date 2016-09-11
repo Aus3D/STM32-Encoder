@@ -199,12 +199,20 @@ bool SoftwareWire::i2cRead(uint8_t addr, uint8_t reg, uint8_t len, uint8_t *buf)
     if (!i2cStart()) {
 	    return false;
 	}
-    i2cSendByte((addr << 1) | 1);
+    i2cSendByte((addr << 1) | 0x00);
 
     if (!i2cWaitAck()) {
     	i2cStop();
         return false;
     }
+
+    i2cSendByte(reg);
+    i2cWaitAck();
+
+    i2cStart();
+
+    i2cSendByte((addr << 1) | 0x01);
+    i2cWaitAck();
 
     while (len) {
         *buf = i2cReceiveByte();
