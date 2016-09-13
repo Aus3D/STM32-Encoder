@@ -5,7 +5,6 @@
 #include "stm32f0xx_hal.h"
 #include "softi2c.h"
 #include "pins.h"
-//#include "soft_i2c.h"
 
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 

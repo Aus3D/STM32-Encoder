@@ -27,13 +27,9 @@ uint8_t ledHSV[] = {255,255,255};
 
 #define I2C_TIMING      0x00A51314
 #define I2C_ADDRESS        (0x30)
-#define I2C_BYTE_TO_SEND (0x01)
 #define MAX_DATA_BYTES 8
 
-uint8_t m_TransmissionRuning = 0;
-
 uint8_t rxIndex = 0;
-bool 	rxComplete = false;
 volatile uint8_t txIndex = 0;
 uint8_t rxBuffer[MAX_DATA_BYTES] = {0};
 uint8_t txBuffer[MAX_DATA_BYTES] = {0};
@@ -41,8 +37,6 @@ uint8_t i2cResponseMode = I2C_REPORT_POSITION;
 
 Ws2812 pixel = Ws2812();
 AS5600Encoder encoder = AS5600Encoder();
-
-I2C_HandleTypeDef hi2c1;
 
 int main(void)
 {
@@ -302,7 +296,7 @@ void i2c_receive_callback() {
 	switch(temp[0]) {
 	    case I2C_RESET_COUNT:
 	    	encoder.setZeroed();
-	      break;
+	    	break;
 	    case I2C_SET_ADDR:
 	    	//TODO configure I2C address
 			//setI2cAddress(temp[1]);
@@ -310,26 +304,27 @@ void i2c_receive_callback() {
 			//restart();
 	      break;
 	    case I2C_SET_REPORT_MODE:
-	      i2cResponseMode = temp[1];
-	      break;
+	    	i2cResponseMode = temp[1];
+	    	break;
 	    case I2C_CLEAR_EEPROM:
-	      //eepromClear();
+	    	//reset saved values to defaults
+	    	//eepromClear();
 	      break;
 	    case I2C_ENC_LED_PAR_MODE:
-	      setLedMode(temp[1],temp[2]);
-	      break;
+	    	setLedMode(temp[1],temp[2]);
+	    	break;
 	    case I2C_ENC_LED_PAR_BRT:
-	      setLedBrightness(temp[1],temp[2]);
-	      break;
+	    	setLedBrightness(temp[1],temp[2]);
+	    	break;
 	    case I2C_ENC_LED_PAR_RGB:
-	      setLedRGB(temp[1],temp[2],temp[3]);
-	      break;
+	    	setLedRGB(temp[1],temp[2],temp[3]);
+	    	break;
 	    case I2C_ENC_LED_PAR_HSV:
-	      setLedHSV(temp[1],temp[2],temp[3]);
-	      break;
+	    	setLedHSV(temp[1],temp[2],temp[3]);
+	    	break;
 	    case I2C_ENC_LED_PAR_RATE:
-	      setLedRate(temp[1],temp[2]);
-	      break;
+	    	setLedRate(temp[1],temp[2]);
+	    	break;
 	  }
 }
 
@@ -398,10 +393,8 @@ extern "C"
 			I2C1->ISR |= I2C_ISR_TXE;		// Flush transmit register
 			I2C1->ICR |= I2C_ICR_STOPCF;	// Clear stop flag
 		}
-
 		TEST_PORT->BRR |= TEST_PIN;		//debug test
 	}
-
 }
 
 void setLedMode(uint8_t led, uint8_t mode) {

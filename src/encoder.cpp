@@ -1,7 +1,5 @@
 #include "encoder.h"
-//#include "soft_i2c.h"
 #include "softi2c.h"
-
 
 AS5600Encoder::AS5600Encoder() {
 
@@ -28,6 +26,7 @@ bool AS5600Encoder::init() {
 void AS5600Encoder::update() {
 	uint8_t mh, ml, md;
 
+	//read and store all data from encoder
 	encWire.i2cRead(ENC_I2C_ADDR,ENC_REG_STATUS,ENC_REG_AGC - ENC_REG_STATUS + 1,rawData + ENC_REG_STATUS);
 
 	md = !CHECK_BIT(rawData[ENC_REG_STATUS],ENC_STATUS_BIT_MD);
@@ -43,9 +42,10 @@ void AS5600Encoder::update() {
 		magStrength = MAG_SIG_BAD;
 	}
 
-	count = rawData[ENC_REG_ANG_FIL1];//angleFiltered[0];
+	//convert raw bytes to long containing angular reading
+	count = rawData[ENC_REG_ANG_FIL1];
 	count = count << 8;
-	count |= rawData[ENC_REG_ANG_FIL2];//angleFiltered[1];
+	count |= rawData[ENC_REG_ANG_FIL2];
 
 	//check if we've moved from one revolution to the next
 	if((count-oldCount) > 2048) {
@@ -56,7 +56,7 @@ void AS5600Encoder::update() {
 
 	oldCount = count;
 
-	//make the starting position 'zero'
+	//if first loop, make the starting position 'zero'
 	if(offsetInitialised == false) {
 		offset = -count;
 		offsetInitialised = true;
