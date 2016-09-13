@@ -62,9 +62,6 @@ class AS5600Encoder {
 		bool init();
 		void update();
 
-		void readEncoderBytes(uint8_t,uint8_t[],uint8_t);
-		uint8_t readEncoderByte(uint8_t);
-
 		//sets offset to current count
 		void setZeroed();
 
@@ -75,11 +72,6 @@ class AS5600Encoder {
 		long getCount();
 
 		longByte encoderCount;
-		uint8_t statusByte;
-		uint8_t agcByte;
-
-		uint8_t angleFiltered[2];
-
 		uint8_t rawData[0x1D];
 
 };

@@ -51,7 +51,6 @@ int main(void)
 	for(;;) {
 		encoder.update();
 		updateLed();
-
 	}
 }
 
@@ -285,12 +284,11 @@ void i2c_transmit_callback() {
 			//todo
 			break;
 		case I2C_REPORT_ENC_AGC:
-			txBuffer[0] = encoder.agcByte;
+			txBuffer[0] = encoder.rawData[ENC_REG_AGC];
 			break;
 		case I2C_REPORT_ENC_RAW:
 			txBuffer[0] = encoder.rawData[ENC_REG_ANG_FIL1];
 			txBuffer[1] = encoder.rawData[ENC_REG_ANG_FIL2];
-			//memcpy(txBuffer,&encoder.angleFiltered,2);
 			break;
 	}
 }
@@ -306,9 +304,10 @@ void i2c_receive_callback() {
 	    	encoder.setZeroed();
 	      break;
 	    case I2C_SET_ADDR:
-	      //setI2cAddress(temp[1]);
-	      //blinkLeds(1,CRGB::White);
-	      //restart();
+	    	//TODO configure I2C address
+			//setI2cAddress(temp[1]);
+			//blinkLeds(1,CRGB::White);
+			//restart();
 	      break;
 	    case I2C_SET_REPORT_MODE:
 	      i2cResponseMode = temp[1];
@@ -332,9 +331,6 @@ void i2c_receive_callback() {
 	      setLedRate(temp[1],temp[2]);
 	      break;
 	  }
-
-
-
 }
 
 extern "C"
@@ -348,7 +344,6 @@ extern "C"
 	void I2C1_IRQHandler(void)
 	{
 		TEST_PORT->BSRR |= TEST_PIN;		//debug test
-		//i2c_callback();
 
 		uint32_t I2C_InterruptStatus = I2C1->ISR; /* Get interrupt status */
 
@@ -398,12 +393,10 @@ extern "C"
 			rxIndex = 0;
 			txIndex = 0;
 
-			I2C1->CR1 &=~ I2C_CR1_TXIE; /* Disable transmit IT */
-			I2C1->CR1 &=~ I2C_CR1_RXIE; /* Disable receive IT */
-
-			I2C1->ISR |= I2C_ISR_TXE;	/* Flush transmit register */
-
-			I2C1->ICR |= I2C_ICR_STOPCF;
+			I2C1->CR1 &=~ I2C_CR1_TXIE; 	// Disable transmit IT
+			I2C1->CR1 &=~ I2C_CR1_RXIE; 	// Disable receive IT
+			I2C1->ISR |= I2C_ISR_TXE;		// Flush transmit register
+			I2C1->ICR |= I2C_ICR_STOPCF;	// Clear stop flag
 		}
 
 		TEST_PORT->BRR |= TEST_PIN;		//debug test
