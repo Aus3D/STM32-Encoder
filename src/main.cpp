@@ -220,10 +220,10 @@ void updateLed() {
 			pixel.setPixelColor(i, ledRGB[0], ledRGB[1], ledRGB[2]);
 			break;
 		case 6:
-			//leds[i].setHSV(ledHSV[0], ledHSV[1], ledHSV[2]);
+			pixel.setPixelHSV(i,ledHSV[0], ledHSV[1], ledHSV[2]);
 			break;
 		case 7:
-			//leds[i].setHSV(encoderCount.val / 10 * ledRate[i], 255, 255);
+			pixel.setPixelHSV(i,(uint8_t)encoder.getCount() / 10 * ledRate[i], 255, 255);
 			break;
 		case 8:
 			//leds[i].setHSV(millis() / 1000 * ledRate[i], 255, 255);

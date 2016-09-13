@@ -116,6 +116,51 @@ void Ws2812::setPixelColor(int led, unsigned color) {
 	ledColour[led] = color;
 }
 
+#define HSV_SECTION_6 (0x20)
+#define HSV_SECTION_3 (0x40)
+
+void Ws2812::setPixelHSV(int led, int h, int s, int v) {
+	uint8_t r, g, b;
+
+	uint8_t value = v;
+	uint8_t saturation = s;
+
+	uint8_t invsat = (255 - saturation);
+	uint8_t brightness_floor = (value * invsat) / 256;
+
+	uint8_t color_amplitude = value - brightness_floor;
+
+	uint8_t section = h / HSV_SECTION_3;
+	uint8_t offset 	= h % HSV_SECTION_3;
+
+	uint8_t rampup = offset;
+	uint8_t rampdown = (HSV_SECTION_3 - 1) - offset;
+
+	uint8_t rampup_amp_adj 		= (rampup 	* color_amplitude) 	/ (256 / 4);
+	uint8_t rampdown_amp_adj 	= (rampdown * color_amplitude) 	/ (256 / 4);
+
+	uint8_t rampup_adj_with_floor 	= rampup_amp_adj 	+ 	brightness_floor;
+	uint8_t rampdown_adj_with_floor	= rampdown_amp_adj 	+ 	brightness_floor;
+
+	if(section) {
+		if(section == 1) {
+			r = brightness_floor;
+			g = rampdown_adj_with_floor;
+			b = rampup_adj_with_floor;
+		} else {
+			r = rampup_adj_with_floor;
+			g = brightness_floor;
+			b = rampdown_adj_with_floor;
+		}
+	} else {
+		r = rampdown_adj_with_floor;
+		g = rampup_adj_with_floor;
+		b = brightness_floor;
+	}
+
+	setPixelColor(led,r,g,b);
+}
+
 void Ws2812::nscale8(int led, int brightness) {
 	uint8_t r, g, b;
 	uint16_t scale_fixed = brightness + 1;
