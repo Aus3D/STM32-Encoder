@@ -5,6 +5,7 @@
 #include "stm32f0xx_hal.h"
 #include "softi2c.h"
 #include "pins.h"
+//#include "soft_i2c.h"
 
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 
@@ -20,11 +21,11 @@
 #define ENC_REG_MANG2 		0x06
 #define ENC_REG_CONF1 		0x07
 #define ENC_REG_CONF2 		0x08
+#define ENC_REG_STATUS		0x0B
 #define ENC_REG_ANG_RAW1	0x0C
 #define ENC_REG_ANG_RAW2	0x0D
 #define ENC_REG_ANG_FIL1	0x0E
 #define ENC_REG_ANG_FIL2	0x0F
-#define ENC_REG_STATUS		0x0B
 #define ENC_REG_AGC			0x1A
 #define ENC_REG_MAG1		0x1B
 #define ENC_REG_MAG2		0x1C
@@ -43,8 +44,6 @@ typedef union{
 	uint8_t bval[4];
 }longByte;
 
-
-
 class AS5600Encoder {
 	private:
 
@@ -54,23 +53,34 @@ class AS5600Encoder {
 		long revolutions;
 		bool offsetInitialised;
 
-
 		uint8_t magStrength;
 
-
 		SoftwareWire encWire = SoftwareWire(ENC_SDA, ENC_PORT, ENC_SCL, ENC_PORT);
-		void readEncoderBytes(uint8_t,uint8_t[],uint8_t);
 
 	public:
 		AS5600Encoder();
 		bool init();
 		void update();
 
+		void readEncoderBytes(uint8_t,uint8_t[],uint8_t);
+		uint8_t readEncoderByte(uint8_t);
+
+		//sets offset to current count
+		void setZeroed();
+
+		void setOffset(long offset);
+		long getOffset();
+
 		uint8_t getMagStrength();
 		long getCount();
 
 		longByte encoderCount;
 		uint8_t statusByte;
+		uint8_t agcByte;
+
+		uint8_t angleFiltered[2];
+
+		uint8_t rawData[0x1D];
 
 };
 

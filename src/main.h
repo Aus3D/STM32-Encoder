@@ -5,6 +5,7 @@
 #include "stm32f0xx_hal.h"
 
 #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
+#define allowedLeds(num) constrain(led,0,WS2812_NUM)
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 
 /* Private function prototypes -----------------------------------------------*/
@@ -21,25 +22,36 @@ void Configure_GPIO_I2C1(void);
 void Configure_I2C1_Slave(void);
 void Configure_GPIO_General(void);
 
-void i2c_callback();
 void i2c_receive_callback();
+void i2c_transmit_callback();
 
 void setLedMode(uint8_t, uint8_t);
 void setLedBrightness(uint8_t, uint8_t);
+void setLedRate(uint8_t,uint8_t);
+void setLedRGB(uint8_t,uint8_t,uint8_t);
+void setLedHSV(uint8_t,uint8_t,uint8_t);
+
 
 //I2C Slave Setup
+#define I2C_REPORT_POSITION   	0
+#define I2C_REPORT_STATUS     	1
+#define I2C_REPORT_VERSION		2
 
-#define I2C_REQ_REPORT        0
-#define I2C_RESET_COUNT       1
-#define I2C_SET_ADDR          2
-#define I2C_SET_REPORT_MODE   3
-#define I2C_CLEAR_EEPROM      4
+#define I2C_REPORT_ENC_AGC		20
+#define I2C_REPORT_ENC_STATUS	21
+#define I2C_REPORT_ENC_RAW		22
 
-#define I2C_ENC_LED_PAR_MODE  10
-#define I2C_ENC_LED_PAR_BRT   11
-#define I2C_ENC_LED_PAR_RATE  12
-#define I2C_ENC_LED_PAR_RGB   13
-#define I2C_ENC_LED_PAR_HSV   14
+#define I2C_REQ_REPORT        	0
+#define I2C_RESET_COUNT       	1
+#define I2C_SET_ADDR          	2
+#define I2C_SET_REPORT_MODE   	3
+#define I2C_CLEAR_EEPROM      	4
+
+#define I2C_ENC_LED_PAR_MODE  	10
+#define I2C_ENC_LED_PAR_BRT   	11
+#define I2C_ENC_LED_PAR_RATE  	12
+#define I2C_ENC_LED_PAR_RGB   	13
+#define I2C_ENC_LED_PAR_HSV   	14
 
 //Address configuration
 #define WS2812_NUM 		2

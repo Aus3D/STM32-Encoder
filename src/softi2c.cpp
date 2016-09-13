@@ -34,11 +34,13 @@ void SoftwareWire::i2cInit()
 	_sdaPort->OTYPER 	= (_sdaPort->OTYPER & ~(uint16_t)(0x01 << sdaPinIndex)) | ((uint16_t)(0x01 << sdaPinIndex));
 	_sdaPort->PUPDR 	= (_sdaPort->PUPDR & ~(0x03 << (2 * sdaPinIndex))) | ((uint32_t)(0x00 << (2 * sdaPinIndex)));
 	_sdaPort->OSPEEDR 	= (_sdaPort->OSPEEDR & ~((uint32_t)(0x03 << (2 * sdaPinIndex)))) | ((uint32_t)(0x03 << (2 * sdaPinIndex)));
+	//_sdaPort->OSPEEDR 	= (_sdaPort->OSPEEDR | ((uint32_t)(0x03 << (2 * sdaPinIndex)))) | ((uint32_t)(0x03 << (2 * sdaPinIndex)));
 
 	_sclPort->MODER 	= (_sclPort->MODER & ~((uint32_t)(0x03 << (2 * sclPinIndex)))) | ((uint32_t)(0x01 << (2 * sclPinIndex)));
 	_sclPort->OTYPER 	= (_sclPort->OTYPER & ~(uint16_t)(0x01 << sclPinIndex)) | ((uint16_t)(0x01 << sclPinIndex));
 	_sclPort->PUPDR 	= (_sclPort->PUPDR & ~(0x03 << (2 * sclPinIndex))) | ((uint32_t)(0x00 << (2 * sclPinIndex)));
 	_sclPort->OSPEEDR 	= (_sclPort->OSPEEDR & ~((uint32_t)(0x03 << (2 * sclPinIndex)))) | ((uint32_t)(0x03 << (2 * sclPinIndex)));
+	//_sclPort->OSPEEDR 	= (_sclPort->OSPEEDR | ((uint32_t)(0x03 << (2 * sclPinIndex)))) | ((uint32_t)(0x03 << (2 * sclPinIndex)));
 }
 
 bool SoftwareWire::i2cStart(void)
@@ -147,10 +149,9 @@ uint8_t SoftwareWire::i2cReceiveByte(void)
         }
     }
     SCL_L;
+
     return byte;
 }
-
-
 
 bool SoftwareWire::i2cWriteBuffer(uint8_t addr, uint8_t reg, uint8_t len, uint8_t * data)
 {
@@ -199,6 +200,7 @@ bool SoftwareWire::i2cRead(uint8_t addr, uint8_t reg, uint8_t len, uint8_t *buf)
     if (!i2cStart()) {
 	    return false;
 	}
+
     i2cSendByte((addr << 1) | 0x00);
 
     if (!i2cWaitAck()) {
@@ -206,8 +208,12 @@ bool SoftwareWire::i2cRead(uint8_t addr, uint8_t reg, uint8_t len, uint8_t *buf)
         return false;
     }
 
+    i2cDelay();
+
     i2cSendByte(reg);
     i2cWaitAck();
+
+    i2cStop();
 
     i2cStart();
 
@@ -224,6 +230,7 @@ bool SoftwareWire::i2cRead(uint8_t addr, uint8_t reg, uint8_t len, uint8_t *buf)
         buf++;
         len--;
     }
+
     i2cStop();
     return true;
 }
@@ -232,9 +239,32 @@ bool SoftwareWire::i2cRead(uint8_t addr, uint8_t reg, uint8_t len, uint8_t *buf)
 void SoftwareWire::i2cDelay(void) {
 	//delayTicks(_delayLoops);
 
-	int time = 2;
+	int time = 1;
+
 
 	while(time--);
+}
+
+uint8_t SoftwareWire::readBit() {
+	uint8_t bit = 0;
+
+	SDA_H;
+
+	i2cDelay();
+
+	SCL_H;
+
+	while(SCL_read == 0) {
+
+	}
+
+	i2cDelay();
+
+	bit = SDA_read;
+
+	SCL_L;
+
+	return bit;
 }
 
 uint8_t pinIndex(uint16_t gpio_pin) {
